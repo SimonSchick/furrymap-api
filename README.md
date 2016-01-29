@@ -13,11 +13,11 @@ All settings:
 }
 ```
 
-##Promise.<{users: FurrymapProfile[], markers: FurrymapMarker[]}> FurryMap.search(searchString: string, filter: string)
+##Promise.&lt;{users: FurrymapProfile[], markers: FurrymapMarker[]}&gt; FurryMap.search(searchString: string, filter: string)
 Performs a search for markers and/or users.
 
-##Promise.<FurrymapFullProfile> FurryMap.getProfile(userName: string)
+##Promise.&lt;FurrymapFullProfile&gt; FurryMap.getProfile(userName: string)
 Fetches a full profile.
 
-##Promise.<FurrymapMarker2[]> FurryMap.loadMarkers(forceRefresh: boolean)
+##Promise.&lt;FurrymapMarker2[]&gt; FurryMap.loadMarkers(forceRefresh: boolean)
 Downloads the marker data(all markers) and caches them.
