@@ -345,7 +345,7 @@ module.exports = class FurryMap {
 				location: {
 					longitude: entry[0],
 					latitude: entry[1],
-					country: whichCountry(entry[0], entry[1])
+					country: whichCountry([entry[0], entry[1]])
 				},
 				profileURL: `https://furrymap.net${entry[6]}`,
 				profileImageURL: entry[7] === 0 ? undefined : `https://furrymap.net/images/avatar/${entry[7]}.png`
@@ -368,8 +368,8 @@ module.exports = class FurryMap {
 			return fs.statAsync(this.config.cacheName)
 			.then(() => fs.readFileAsync(this.config.cacheName))
 			.then(JSON.parse)
-			.catch(() => this.loadInternal());
+			.catch(() => this.loadMarkersInternal());
 		}
-		return this.loadInternal();
+		return this.loadMarkersInternal();
 	}
 };
