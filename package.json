@@ -6,6 +6,10 @@
   "scripts": {
     "test": "node test.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/SimonSchick/furrymap-api.git"
+  },
   "keywords": [
     "furrymap",
     "furry",
@@ -14,6 +18,9 @@
   ],
   "author": "Simon Schick <demwizzy@gmail.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SimonSchick/furrymap-api/issues"
+  },
   "dependencies": {
     "bluebird": "^3.1.5",
     "cheerio": "^0.19.0",
