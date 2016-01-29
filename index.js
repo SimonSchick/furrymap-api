@@ -23,6 +23,7 @@ module.exports = class FurryMap {
 
 	/**
 	 * Returns whether the client is authenticated yet.
+	 * @private
 	 * @return {Boolean} Is authenticated.
 	 */
 	isAuthenticated() {
@@ -31,6 +32,7 @@ module.exports = class FurryMap {
 
 	/**
 	 * Authenticates the client.
+	 * @private
 	 * Internally the client fetches a cookie and csrf token to use the search.
 	 * @return {Promise} Resolves when the auth succeeded.
 	 */
@@ -172,6 +174,7 @@ module.exports = class FurryMap {
 
 	/**
 	 * Performs a search for username and/or users and markers.
+	 * @public
 	 * @param  {string} name The search string.
 	 * @param  {!string} filter Can be "furries" or "markers", leave blank for both.
 	 * @return {Promise.<{users: FurrymapProfile[], markers: FurrymapMarker[]}>} Resolves the search results.
@@ -222,6 +225,7 @@ module.exports = class FurryMap {
 
 	/**
 	 * Gets the text content, ignoring the text of all child nodes.
+	 * @private
 	 * @param  {CheerioElement} element The element to get the text from.
 	 * @return {string} Text.
 	 */
@@ -237,6 +241,7 @@ module.exports = class FurryMap {
 
 	/**
 	 * Fetches the profile info for a user by name.
+	 * @public
 	 * @param {string} userName The use to fetch.
 	 * @return {Promise.<FurrymapFullProfile>} Resolves a full profile.
 	 */
