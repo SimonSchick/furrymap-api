@@ -6,7 +6,6 @@ Right now this only allows fetching data from the website.
 For simple example usage, please see the test folder and the source, it's fully documented :).
 
 ## constructor(Object settings)
-```
 All settings:
 ```javascript
 {
