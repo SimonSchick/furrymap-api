@@ -18,6 +18,6 @@ Promise.all([
 	client.search(process.env.SEARCH)
 ])
 .then(data => {
-	console.log(data.length);
-	//console.log(JSON.stringify(data, null, '\t'));
+	console.log('Marker count:', data.shift().length);
+	console.log(JSON.stringify(data, null, '\t'));
 }, error => console.error(error.stack));
