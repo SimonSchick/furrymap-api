@@ -3,7 +3,7 @@
 const Promise = require('bluebird');
 const FurryMap = require('./index');
 
-require('assert')(process.ENV.SEARCH, 'Needs search param for test');
+require('assert')(process.env.SEARCH, 'Needs search param for test');
 const options = {};
 if (process.env.USERNAME && process.env.PASSWORD) {
 	options.credentials = {
