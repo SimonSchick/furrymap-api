@@ -1,6 +1,6 @@
 {
   "name": "furrymap-api",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Simple furrymap client.",
   "main": "index.js",
   "scripts": {
