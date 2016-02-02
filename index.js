@@ -51,7 +51,6 @@ module.exports = class FurryMap {
 				url: requestOptions
 			};
 		}
-		console.log(requestOptions);
 		const returnPromise = !this.isAuthenticated() && !skipAuth ? this.authenticate() : Promise.resolve();
 		return returnPromise.then(() =>
 			request(Object.assign({
