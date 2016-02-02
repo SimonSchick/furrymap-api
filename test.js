@@ -2,12 +2,22 @@
 
 const Promise = require('bluebird');
 const FurryMap = require('./index');
-const client = new FurryMap();
+
+require('assert')(process.ENV.SEARCH, 'Needs search param for test');
+const options = {};
+if (process.env.USERNAME && process.env.PASSWORD) {
+	options.credentials = {
+		username: process.env.USERNAME,
+		password: process.env.PASSWORD
+	};
+}
+const client = new FurryMap(options);
 Promise.all([
 	client.loadMarkers(),
-	client.getProfile('Doridian'),
-	client.search('Doridian')
+	client.getProfile(process.env.SEARCH),
+	client.search(process.env.SEARCH)
 ])
 .then(data => {
-	console.log(data);
+	console.log(data.length);
+	//console.log(JSON.stringify(data, null, '\t'));
 }, error => console.error(error.stack));

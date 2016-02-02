@@ -1,7 +1,9 @@
 'use strict';
 
 const Promise = require('bluebird');
-const request = Promise.promisify(require('request'));
+const request = Promise.promisify(require('request').defaults({
+	baseUrl: 'https://furrymap.net'
+}));
 const fs = Promise.promisifyAll(require('fs'));
 const cheerio = require('cheerio');
 const whichCountry = require('which-country');
@@ -14,11 +16,15 @@ module.exports = class FurryMap {
 	/**
 	 * @param {Object} config The config object.
 	 * @param {string} [config.cacheName='furrymapCache.json'] The file to store the markers in.
+	 * @param {!Object} [config.credentials] Contains credentials, optional.
+	 * @param {string} [config.credentials.username] Username to use.
+	 * @param {string} [config.credentials.password] Password to use.
 	 */
 	constructor(config) {
 		this.config = Object.assign({
 			cacheName: 'furrymapCache.json'
 		}, config);
+		this.jar = request.jar();
 	}
 
 	/**
@@ -27,7 +33,58 @@ module.exports = class FurryMap {
 	 * @return {Boolean} Is authenticated.
 	 */
 	isAuthenticated() {
-		return Boolean(this.cookie);
+		return this.authPromise && this.authPromise.isFulfilled();
+	}
+
+
+
+	/**
+	 * Loads HTML into a cheerio object.
+	 * @private
+	 * @param  {RequestOptions} requestOptions The request options.
+	 * @param {boolean} skipAuth Skips authentication.
+	 * @return {Promise.<Cheerio>} Resolves a cheerio object.
+	 */
+	loadHTML(requestOptions, skipAuth) {
+		if (typeof requestOptions === 'string') {
+			requestOptions = {
+				url: requestOptions
+			};
+		}
+		console.log(requestOptions);
+		const returnPromise = !this.isAuthenticated() && !skipAuth ? this.authenticate() : Promise.resolve();
+		return returnPromise.then(() =>
+			request(Object.assign({
+				jar: this.jar
+			}, requestOptions))
+		)
+		.get('body')
+		.then(cheerio.load);
+	}
+
+	/**
+	 * Performs the login.
+	 * @private
+	 * @return {Promise} Resolves on success.
+	 */
+	doLogin() {
+		const cred = this.config.credentials;
+		return this.loadHTML('/en/login', true)
+		.then($ => this.loadHTML({
+			url: '/en/login',
+			method: 'POST',
+			form: {
+				'signin[username]': cred.username,
+				'signin[password]': cred.password,
+				'signin[remember]': 'on',
+				'signin[_csrf_token]': $('#signin__csrf_token').val()
+			}
+		}, true))
+		.then($ => {
+			if ($('#login_form > .error_list').length) {
+				throw new Error('Invalid login');
+			}
+		});
 	}
 
 	/**
@@ -40,12 +97,12 @@ module.exports = class FurryMap {
 		if (this.authPromise && this.authPromise.isPending()) {
 			return this.authPromise;
 		}
-		this.authPromise = request({
-			url: 'https://furrymap.net/en/search/'
-		})
-		.then(response => {
-			this.cookie = response.headers['set-cookie'][0].split(';')[0];
-			this.csrf = cheerio.load(response.body)('#namefinder__csrf_token').attr('value');
+		const retPromise = this.config.credentials ? this.doLogin() : Promise.resolve();
+		this.authPromise = retPromise.then(() => this.loadHTML({
+			url: '/en/search/'
+		}, true))
+		.then($ => {
+			this.csrf = $('#namefinder__csrf_token').val();
 		});
 		return this.authPromise;
 	}
@@ -85,8 +142,8 @@ module.exports = class FurryMap {
 			return {
 				id,
 				name: userLink.text().trim(),
-				profileURL: `https://furrymap.net${$(container.find('a').get(0)).attr('href')}`,
-				avatarURL: `https://furrymap.net/images/avatar/${id}.png`,
+				profileURL: $(container.find('a').get(0)).attr('href'),
+				avatarURL: `/images/avatar/${id}.png`,
 				gender: $(container.find('a + img').get(0)).attr('alt'),
 				country: $(container.find('small > span > img').get(0)).attr('title'),
 				species: speciesAndMarker[1],
@@ -149,29 +206,6 @@ module.exports = class FurryMap {
 	 * @external {RequestOptions} https://github.com/request/request#requestoptions-callback
 	 */
 
-
-	/**
-	 * Loads HTML into a cheerio object.
-	 * @private
-	 * @param  {RequestOptions} requestOptions The request options.
-	 * @return {Promise.<Cheerio>} Resolves a cheerio object.
-	 */
-	loadHTML(requestOptions) {
-		let returnPromise = Promise.resolve();
-		if (!this.isAuthenticated()) {
-			returnPromise = this.authenticate();
-		}
-		return returnPromise.then(() =>
-			request(Object.assign({
-				headers: {
-					Cookie: this.cookie
-				}
-			}, requestOptions))
-		)
-		.get('body')
-		.then(cheerio.load);
-	}
-
 	/**
 	 * Performs a search for username and/or users and markers.
 	 * @public
@@ -186,7 +220,7 @@ module.exports = class FurryMap {
 		}
 		return returnPromise.then(() =>
 			this.loadHTML({
-				url: 'https://furrymap.net/en/search/',
+				url: '/en/search/',
 				method: 'post',
 				form: {
 					'namefinder[search]': name,
@@ -247,7 +281,7 @@ module.exports = class FurryMap {
 	 */
 	getProfile(userName) {
 		return this.loadHTML({
-			url: `https://furrymap.net/profile/${userName}`
+			url: `/profile/${userName}`
 		})
 		.then($ => {
 			const container = $('#middle_content');
@@ -334,7 +368,7 @@ module.exports = class FurryMap {
 	 */
 	loadMarkersInternal() {
 		return request({
-			url: 'https://furrymap.net/en/marker/list/type/all',
+			url: '/en/marker/list/type/all',
 			//json: true, cannot send this as this make the server 500
 			headers: {
 				'User-Agent': 'curl/7.43.0'
@@ -352,8 +386,8 @@ module.exports = class FurryMap {
 					latitude: entry[1],
 					country: whichCountry([entry[0], entry[1]])
 				},
-				profileURL: `https://furrymap.net${entry[6]}`,
-				profileImageURL: entry[7] === 0 ? undefined : `https://furrymap.net/images/avatar/${entry[7]}.png`
+				profileURL: `${entry[6]}`,
+				profileImageURL: entry[7] === 0 ? undefined : `/images/avatar/${entry[7]}.png`
 			}))
 		)
 		.then(data =>
