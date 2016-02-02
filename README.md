@@ -9,7 +9,11 @@ For simple example usage, please see the test folder and the source, it's fully 
 All settings:
 ```javascript
 {
-	cacheName: string = furrymapCache.json
+	cacheName: string = furrymapCache.json,
+	credentials: { //OPTIONAL
+		username: string,
+		password: string
+	}
 }
 ```
 
