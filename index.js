@@ -367,7 +367,7 @@ module.exports = class FurryMap {
 	 */
 	loadMarkersInternal() {
 		return request({
-			url: '/en/marker/list/type/all',
+			url: 'en/marker/list/type/combined',
 			//json: true, cannot send this as this make the server 500
 			headers: {
 				'User-Agent': 'curl/7.43.0'

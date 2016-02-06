@@ -13,7 +13,7 @@ if (process.env.USERNAME && process.env.PASSWORD) {
 }
 const client = new FurryMap(options);
 Promise.all([
-	client.loadMarkers(),
+	client.loadMarkers(true),
 	client.getProfile(process.env.SEARCH),
 	client.search(process.env.SEARCH)
 ])
